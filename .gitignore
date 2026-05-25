@@ -1,1 +1,21 @@
-# gitignore
+# Editor / IDE
+.ruff_cache
+.vscode/
+
+# Data and results
+data/
+results/
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info
+
+# MATLAB
+*.asv
+
+# macOS junk
+.DS_Store
+._*
+.~$*
+~$*
