@@ -2,23 +2,24 @@ clear all; close all; clc;
 addpath(genpath(fullfile('..', 'functions')));
 
 %% --- Setup Paths and Define session
-session = 'Nike/20260326_NRR_RW027_fastig';
+session = 'Nike/20260410_NRR_RW030_fastig';
 [~, session_name] = fileparts(session);
 % Get machine-specific root path
 [base_root, code_root, base_folder] = set_paths_cullen_lab(session);
 relative_path = fullfile('Current Project Databases - NHP', ...
                          '2025 Cerebellum prosthesis', 'Bryan', 'Data', session_name);
 %% --- Load Metadata ---
-opts = detectImportOptions(metadata_csv);
-opts = setvartype(opts, 'Stim_Delay', 'string');
-T = readtable(metadata_csv, opts);
-%%
 search_folder      = fullfile(base_folder, 'Calibrated');
 intan_folder      = fullfile(base_folder, 'Intan');
 metadata_csv  = fullfile(base_folder, 'Metadata', [session_name, '_metadata.csv']);
 stim_files = dir(fullfile(search_folder, '**', '*_Cal_stim.mat'));
 nonstim_files = dir(fullfile(search_folder, '**', '*_Cal.mat'));
 intanfiles = dir(fullfile(intan_folder, '**', 'stim_data.mat'));
+
+%% --- Load Metadata ---
+opts = detectImportOptions(metadata_csv);
+opts = setvartype(opts, 'Stim_Delay', 'string');
+T = readtable(metadata_csv, opts);
 
 file_map = containers.Map('KeyType', 'double', 'ValueType', 'char');
 % extract_br = @(name) str2double(regexp(name, 'STIM_\d+_(\d+)_Cal', 'tokens', 'once'));
@@ -98,38 +99,65 @@ end
 trial_mat_files = trial_mat_files(sort_idx);
 %% --- Session-specific Endpoint Targets ---
 switch session
+    case 'Bert/BL_RW_001_Session_1'
+        EndPoint_pos = 32; EndPoint_neg = -26;
+        search_folder = fullfile(base_folder, 'Renamed2');
+        trial_mat_files = dir(fullfile(search_folder, '*_Cal.mat'));
+        baseline_file_nums = [26];
+        trial_indices = [20, 21];
+    case 'Bert/BL_RW_002_Session_1'
+        EndPoint_pos = 49.5857; EndPoint_neg = -34.4605;
+        baseline_file_nums = [4, 27];
+        trial_indices = [21];
+    case 'Bert/BL_RW_003_Session_1'
+        EndPoint_pos = 41; EndPoint_neg = -33;
+        segment_fields_random = {'active_like_stim_pos_nan', 'active_like_stim_pos_0', ...
+            'active_like_stim_pos_100', 'active_like_stim_pos_200', ...
+            'active_like_stim_neg_nan', 'active_like_stim_neg_0', ...
+            'active_like_stim_neg_100', 'active_like_stim_neg_200'};
+        segment_fields = {'active_like_stim_pos', 'active_like_stim_neg'};
+        baseline_file_nums = [4, 11, 16];
+        trial_indices = [6, 7, 8, 9, 12, 13, 14, 18]; %9 should have stim but doesn't
     case 'Nike/20260304_NRR_RW020_Fastig'
         EndPoint_pos = 30; EndPoint_neg = -30;
         baseline_file_nums = [1, 7];
-        trial_indices = [2, 3, 4, 6];
-        at_rest_indices = [5];
-        segment_fields_random = {'both', 'ipsi', 'contra', 'ipsi_0', 'contra_0', 'ipsi_100', 'contra_100', 'ipsi_200', 'contra_200'};
-        segment_fields = {'both', 'ipsi' , 'contra'};
+        trial_indices = [2, 3, 4, 5, 6];
+        segment_fields_random = {'ipsi_nan' , 'contra_nan', 'ipsi_0' , 'contra_0', 'ipsi_100' , 'contra_100', 'ipsi_200' , 'contra_200'};
+        segment_fields = {'ipsi' , 'contra'};
     case 'Nike/20260326_NRR_RW027_fastig'
-        EndPoint_pos = 30; EndPoint_neg = -30;
+        EndPoint_pos = 35; EndPoint_neg = -45.5;
         % 1-6 weird
-        baseline_file_nums = 14;%[1, 6, 14];
-        trial_indices = [8:9, 13, 15:22];%[2, 4:5, 8:9, 13, 15:22];
-        % at_rest_indices = [10, 11];
+        baseline_file_nums = 14;
+        trial_indices = [8:9, 13];
+        segment_fields_random = {'ipsi_nan' , 'contra_nan', 'ipsi_0' , 'contra_0', 'ipsi_100' , 'contra_100', 'ipsi_200' , 'contra_200'};
+        segment_fields = {'ipsi' , 'contra'};
+    case 'Nike/20260410_NRR_RW030_fastig'
+        EndPoint_pos = 35; EndPoint_neg = -45.5;
+        baseline_file_nums = [3, 7, 14]; % 14 is different depth
+        trial_indices = [2, 4, 9:12]; % 12 and 13 are different depth
         segment_fields_random = {'ipsi_nan' , 'contra_nan', 'ipsi_0' , 'contra_0', 'ipsi_100' , 'contra_100', 'ipsi_200' , 'contra_200'};
         segment_fields = {'ipsi' , 'contra'};
     case 'Nike/20260423_NRR_RW033_fastig'
-        EndPoint_pos = 30; EndPoint_neg = -30;
+        EndPoint_pos = 43; EndPoint_neg = -54;
         % 1-9 segmented
-        baseline_file_nums = 1;%[1, 6, 14];
+        baseline_file_nums = 1;
         trial_indices = [3:5, 8:9];
-        % at_rest_indices = [6];
-        segment_fields_random = {'both', 'ipsi', 'contra', 'ipsi_nan' , 'contra_nan', 'ipsi_0' , 'contra_0', 'ipsi_100' , 'contra_100', 'ipsi_200' , 'contra_200'};
-        segment_fields = {'ipsi', 'contra'};
+        segment_fields_random = {'ipsi_nan' , 'contra_nan', 'ipsi_0' , 'contra_0', 'ipsi_100' , 'contra_100', 'ipsi_200' , 'contra_200'};
+        segment_fields = {'ipsi' , 'contra'};
     otherwise
         EndPoint_pos = 30; EndPoint_neg = -30;
 end
-%% --- Load Metadata ---
-opts = detectImportOptions(metadata_csv);
-opts = setvartype(opts, 'Stim_Delay', 'string');
-T = readtable(metadata_csv, opts);
+
+% Resolve side labels for this session
+if contains(session, 'Bert')
+    ipsi_label   = 'active_like_stim_pos';
+    contra_label = 'active_like_stim_neg';
+else
+    ipsi_label   = 'ipsi';
+    contra_label = 'contra';
+end
 %% --- Loop over each trial and analyze ---
-for trial = 9% trial_indices
+for trial = trial_indices
     fname = trial_mat_files(trial).name;
     tokens = regexp(fname, '(\d+)_Cal', 'tokens');
     if isempty(tokens)

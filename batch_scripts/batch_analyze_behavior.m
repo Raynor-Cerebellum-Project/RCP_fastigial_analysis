@@ -30,7 +30,17 @@ clear all; close all; clc;
 addpath(genpath(fullfile('..', 'functions')));
 
 %% --- Setup Paths and Define session
-session = 'Bert/BL_RW_003_Session_1';
+session = 'Nike/20260410_NRR_RW030_fastig';
+% Bert/BL_RW_003_Session_1 
+% 
+% Nike/20260304_NRR_RW020_Fastig - missing position data
+%
+% Nike/20260326_NRR_RW027_fastig
+%
+% Nike/20260410_NRR_RW030_fastig
+% Nike/20260423_NRR_RW033_fastig
+%
+
 [~, session_name] = fileparts(session);
 % Get machine-specific root path
 [base_root, code_root, base_folder] = set_paths_cullen_lab(session);
@@ -129,8 +139,14 @@ switch session
         trial_indices = [8:9, 13];
         segment_fields_random = {'ipsi_nan' , 'contra_nan', 'ipsi_0' , 'contra_0', 'ipsi_100' , 'contra_100', 'ipsi_200' , 'contra_200'};
         segment_fields = {'ipsi' , 'contra'};
+    case 'Nike/20260410_NRR_RW030_fastig'
+        EndPoint_pos = 44.3; EndPoint_neg = -50;
+        baseline_file_nums = [3, 7, 14]; % 14 is different depth
+        trial_indices = [2, 4, 9:12]; % 12 and 13 are different depth
+        segment_fields_random = {'ipsi_nan' , 'contra_nan', 'ipsi_0' , 'contra_0', 'ipsi_100' , 'contra_100', 'ipsi_200' , 'contra_200'};
+        segment_fields = {'ipsi' , 'contra'};
     case 'Nike/20260423_NRR_RW033_fastig'
-        EndPoint_pos = 30; EndPoint_neg = -30;
+        EndPoint_pos = 43; EndPoint_neg = -54;
         % 1-9 segmented
         baseline_file_nums = 1;
         trial_indices = [3:5, 8:9];
@@ -142,8 +158,8 @@ end
 
 % Resolve side labels for this session
 if contains(session, 'Bert')
-    ipsi_label   = 'active_like_stim_neg';
-    contra_label = 'active_like_stim_pos';
+    ipsi_label   = 'active_like_stim_pos';
+    contra_label = 'active_like_stim_neg';
 else
     ipsi_label   = 'ipsi';
     contra_label = 'contra';
@@ -376,7 +392,7 @@ for i = trial_indices
                     if ~isfield(cond_data, side_label), continue; end
                     try
                         base_data = cond_data;
-                        fig = plot_traces_neural(base_data, cond_data, side_label, false, ...
+                        fig = plot_traces(base_data, cond_data, side_label, false, ...
                             meta_cond, true, show_figs);
 
                         side_short = side_label;
@@ -453,7 +469,7 @@ for i = trial_indices
     for side = {ipsi_label, contra_label}
         side_label = side{1};
         try
-            fig = plot_traces_neural(base_data, cond_data, side_label, false, ...
+            fig = plot_traces(base_data, cond_data, side_label, false, ... %plot_traces_neural
                 meta_cond, true, show_figs);
             raw_delay = string(meta_cond.Stim_Delay);
             if strcmpi(raw_delay, "Random") || strcmpi(raw_delay, "NaN")

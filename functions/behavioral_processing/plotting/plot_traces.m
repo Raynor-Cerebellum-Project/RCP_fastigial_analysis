@@ -1,12 +1,12 @@
 function fig = plot_traces(base_data, cond_data, side_label, offset, meta_cond, use_ci, show_figs)
-if nargin < 8
-    use_ci = true;  % default: show individual traces
+if nargin < 7
+    use_ci = true;
 end
 
 trace_spacing = 20 * offset;
 t = linspace(-800, 1200, 2001);
 
-is_ipsi = contains(side_label, 'pos');
+is_ipsi = contains(side_label, 'pos') || contains(side_label, 'ipsi');
 suffix = 'ipsi';
 if ~is_ipsi
     suffix = 'contra';
@@ -24,22 +24,28 @@ use_random_baseline = false;
 if isnumeric(raw_delay)
     delay = raw_delay;
     delay_str = sprintf('%dms', delay);
-elseif ischar(raw_delay)
+elseif ischar(raw_delay) || isstring(raw_delay)
     if strcmpi(raw_delay, 'Random')
-        % --- Try to parse delay info from side_label ---
-        tokens = regexp(side_label, 'active_like_stim_(pos|neg)_(\d+)', 'tokens');
+        tokens = regexp(side_label, '^(.+?)_(\d+|nan)$', 'tokens', 'ignorecase');
         if ~isempty(tokens)
-            polarity = tokens{1}{1};
-            delay_str_part = tokens{1}{2};
-            delay = str2double(delay_str_part);
-            delay_str = sprintf('%dms', delay);
+            bare_label = tokens{1}{1};
+            suffix_str = tokens{1}{2};
+            if strcmpi(suffix_str, 'nan')
+                delay = NaN; delay_str = 'NaNms';
+            else
+                delay = str2double(suffix_str);
+                delay_str = sprintf('%dms', delay);
+            end
         else
-            delay = 0;
-            delay_str = 'NaNms';
-            warning('Could not parse delay from side_label: %s', side_label);
+            bare_label = side_label;
+            delay = 0; delay_str = '0ms';
         end
-        % --- Determine if Random baseline exists ---
-        if contains(side_label, 'pos') && isfield(base_data, 'active_like_stim_pos_nan')
+
+        nan_label = [bare_label '_nan'];
+        if isfield(base_data, nan_label)
+            base_side_label = nan_label;
+            use_random_baseline = true;
+        elseif contains(side_label, 'pos') && isfield(base_data, 'active_like_stim_pos_nan')
             base_side_label = 'active_like_stim_pos_nan';
             use_random_baseline = true;
         elseif contains(side_label, 'neg') && isfield(base_data, 'active_like_stim_neg_nan')
@@ -49,25 +55,23 @@ elseif ischar(raw_delay)
     else
         delay = str2double(raw_delay);
         if isnan(delay)
-            delay = 0;
-            delay_str = 'NaNms';
+            delay = 0; delay_str = 'NaNms';
+            warning('Unrecognized Stim_Delay value: %s', raw_delay);
         else
             delay_str = sprintf('%dms', delay);
         end
     end
 else
-    delay = 0;
-    delay_str = 'NaNms';
+    delay = 0; delay_str = 'NaNms';
     warning('Unrecognized format for Stim_Delay: %s', string(raw_delay));
 end
 
-% --- Fallback: use original side_label if no Random override ---
 if ~use_random_baseline
     base_side_label = side_label;
 end
 
-base_summary_field = [suffix '_' strrep(base_side_label, 'active_like_stim_', '') '_summary'];
-cond_summary_field = [suffix '_' strrep(side_label, 'active_like_stim_', '') '_summary'];
+base_summary_field = [base_side_label '_summary'];
+cond_summary_field = [side_label '_summary'];
 
 % === Baseline ===
 baseline_segment = base_data.(base_side_label).segments3;
@@ -171,26 +175,21 @@ end
 
 xlim([-800 1200]);
 
-% Draw stim box with correct y-limits
+% --- velocity stim markers ---
 duration = meta_cond.Stim_Duration_ms;
 linkaxes([ax_vel_baseline, ax_vel_condition, ax_vel_overlay], 'y');
 shared_yl = ylim(ax_vel_overlay);
 
-for ax = [ax_vel_baseline, ax_vel_condition, ax_vel_overlay]
+xline(ax_vel_baseline, delay, 'k--', 'LineWidth', 1.2);
+
+for ax = [ax_vel_condition, ax_vel_overlay]
     hold(ax, 'on');
     fill(ax, ...
         [delay delay+duration delay+duration delay], ...
         [shared_yl(1) shared_yl(1) shared_yl(2) shared_yl(2)], ...
         [0.8 0.1 0.1], 'FaceAlpha', 0.2, 'EdgeColor', 'none');
+    xline(ax, delay, 'k--', 'LineWidth', 1.2);
 end
-
-%
-% for ax = [ax_vel_baseline, ax_vel_condition, ax_vel_overlay]
-%     fill(ax, ...
-%         [delay delay+duration delay+duration delay], ...
-%         [shared_yl(1) shared_yl(1) shared_yl(2) shared_yl(2)], ...
-%         [0.8 0.1 0.1], 'FaceAlpha', 0.2, 'EdgeColor', 'none');
-% end
 
 %% --- Baseline Position ---
 ax_pos_baseline = nexttile(7, [1 2]); hold on;
@@ -232,7 +231,7 @@ for i = 1:size(condition_window,1)
     min_p = min(min_p, min(stacked));
 end
 xlim([-800 1200]); ylim([min_p-10 max_p+10]);
-% Draw stim box with correct y-limits
+
 pos_mat = nan(size(condition_window,1), 2001);
 for i = 1:size(condition_window,1)
     pos = cond_data.(side_label).position_traces(i, :);
@@ -269,32 +268,32 @@ else
 end
 
 xlim([-800 1200]);
+
+% --- position stim markers ---
 linkaxes([ax_pos_baseline, ax_pos_condition, ax_pos_overlay], 'y');
 shared_yl = ylim(ax_pos_overlay);
 
-for ax = [ax_pos_baseline, ax_pos_condition, ax_pos_overlay]
+xline(ax_pos_baseline, delay, 'k--', 'LineWidth', 1.2);
+
+for ax = [ax_pos_condition, ax_pos_overlay]
     hold(ax, 'on');
     fill(ax, ...
          [delay delay+duration delay+duration delay], ...
          [shared_yl(1) shared_yl(1) shared_yl(2) shared_yl(2)], ...
          [0.8 0.1 0.1], 'FaceAlpha', 0.2, 'EdgeColor', 'none');
+    xline(ax, delay, 'k--', 'LineWidth', 1.2);
 end
+n_base = size(baseline_segment, 1);
+n_cond = size(condition_segment, 1);
 
 % === Title using Metadata ===
-stim_str = sprintf('Ch: %g | Freq: %gHz | Curr: %gμA | Dur: %gms | Delay: %s | Depth: %gmm | Trig: %s', ...
+stim_str = sprintf('Ch: %g, Freq: %gHz, Curr: %gμA, Dur: %gms, Delay: %s, Depth: %gmm', ...
     meta_cond.Channels, meta_cond.Stim_Frequency_Hz, meta_cond.Current_uA, ...
-    meta_cond.Stim_Duration_ms, delay_str, meta_cond.Depth_mm, ...
-    meta_cond.Movement_Trigger{1});
+    meta_cond.Stim_Duration_ms, delay_str, meta_cond.Depth_mm);
 
-% === Save figure to ComparisonTraces directory ===
-% Get trial number from metadata (assumes BR_File holds the numeric ID)
 trial_num = meta_cond.BR_File;
-side_short = strrep(side_label, 'active_like_stim_', '');
-title(layout, sprintf('Condition %03d - %s', trial_num, strrep(side_label, '_', ' ')), ...
-    'FontWeight', 'bold', 'FontSize', 14, 'HorizontalAlignment', 'center');
-
-title_str = sprintf('Condition %03d - %s', trial_num, suffix);
-sgtitle({title_str, stim_str}, 'FontWeight', 'bold');
+sgtitle({sprintf('Condition %03d - %s  |  Base n=%d, Cond n=%d', trial_num, suffix, n_base, n_cond), stim_str}, ...
+    'FontWeight', 'bold');
 %% --- Endpoint Error Bar Plot ---
 nexttile(layout, 13); hold on;
 box off; set(gca, 'TickDir', 'out');
@@ -302,8 +301,7 @@ box off; set(gca, 'TickDir', 'out');
 % Get data
 baseline_trials = base_data.(base_side_label).all_err;
 condition_trials = cond_data.(side_label).all_err;
-n_base = sum(~isnan(baseline_trials));
-n_cond = sum(~isnan(condition_trials));
+
 baseline_trials = baseline_trials(~isnan(baseline_trials));
 condition_trials = condition_trials(~isnan(condition_trials));
 

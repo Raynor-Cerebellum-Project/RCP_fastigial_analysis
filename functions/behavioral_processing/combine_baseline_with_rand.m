@@ -13,16 +13,16 @@ combined = cond_metrics;  % Start from condition
 
 map_fields = fieldnames(combine_map);
 for i = 1:numel(map_fields)
-    combined_field = map_fields{i};
-    sources = combine_map.(combined_field);
+    sources = combine_map.(map_fields{i});
 
     if numel(sources) ~= 2
-        warning("Skipping field %s: must specify two source fields.", combined_field);
+        warning("Skipping field %s: must specify two source fields.", map_fields{i});
         continue;
     end
 
     base_field = sources{1};
     cond_field = sources{2};
+    combined_field = cond_field;  % write merged result into the _nan field
 
     if ~isfield(base_metrics, base_field) || ~isfield(cond_metrics, cond_field)
         warning("Missing fields in base or cond: %s / %s", base_field, cond_field);

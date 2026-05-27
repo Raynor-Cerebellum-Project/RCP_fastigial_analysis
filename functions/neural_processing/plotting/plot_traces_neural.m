@@ -1,64 +1,59 @@
 function fig = plot_traces_neural(base_data, cond_data, side_label, offset, meta_cond, use_ci, show_figs)
-if nargin < 8
+if nargin < 7
     use_ci = true;
 end
 
 trace_spacing = 20 * offset;
 t = linspace(-800, 1200, 2001);
 
-is_ipsi = contains(side_label, 'ipsi');
+% Determine ipsi/contra side from label
+is_ipsi = ~isempty(regexpi(side_label, 'ipsi'));
 suffix = 'ipsi';
 if ~is_ipsi
     suffix = 'contra';
 end
 
-% === Extract delay info and determine baseline label ===
 raw_delay = string(meta_cond.Stim_Delay);
 use_random_baseline = false;
 
 if strcmpi(raw_delay, "Random")
-    % parse delay from side_label suffix e.g. ipsi_100, contra_nan, ipsi, ipsi_0
-    tokens = regexp(side_label, '^(ipsi|contra)(?:_(\d+|nan))?$', 'tokens', 'ignorecase');
+    tokens = regexp(side_label, '^(.+?)_(\d+|nan)$', 'tokens', 'ignorecase');
     if ~isempty(tokens)
-        suffix_str = '';
-        if numel(tokens{1}) >= 2
-            suffix_str = tokens{1}{2};
-        end
-        if isempty(suffix_str) || strcmp(suffix_str, '0')
-            % bare 'ipsi'/'contra' or explicit '_0' — no delay
-            delay = 0;
-            delay_str = '0ms';
-        elseif strcmpi(suffix_str, 'nan')
-            delay = NaN;
-            delay_str = 'NaNms';
+        bare_label  = tokens{1}{1};  % e.g. 'active_like_stim_pos', 'ipsi'
+        suffix_str  = tokens{1}{2};  % e.g. '0', '100', 'nan'
+        if strcmpi(suffix_str, 'nan')
+            delay = NaN; delay_str = 'NaNms';
         else
             delay = str2double(suffix_str);
             delay_str = sprintf('%dms', delay);
         end
     else
-        delay = NaN;
-        delay_str = 'NaNms';
+        bare_label = side_label;  % no suffix at all
+        delay = 0; delay_str = '0ms';
     end
-    % use random baseline if available
-    if contains(side_label, 'ipsi') && isfield(base_data, 'ipsi_nan')
+
+    % random baseline: [bare_label '_nan'], e.g. 'active_like_stim_pos_nan', 'ipsi_nan'
+    nan_label = [bare_label '_nan'];
+    if isfield(base_data, nan_label)
+        base_side_label = nan_label;
+        use_random_baseline = true;
+    elseif is_ipsi && isfield(base_data, 'ipsi_nan')
         base_side_label = 'ipsi_nan';
         use_random_baseline = true;
-    elseif contains(side_label, 'contra') && isfield(base_data, 'contra_nan')
+    elseif ~is_ipsi && isfield(base_data, 'contra_nan')
         base_side_label = 'contra_nan';
         use_random_baseline = true;
     end
 else
     delay = str2double(raw_delay);
     if isnan(delay)
-        delay = 0;
-        delay_str = 'NaNms';
+        delay = 0; delay_str = 'NaNms';
         warning('Unrecognized Stim_Delay value: %s', raw_delay);
     else
         delay_str = sprintf('%dms', delay);
     end
 end
 
-% Fallback
 if ~use_random_baseline
     base_side_label = side_label;
 end

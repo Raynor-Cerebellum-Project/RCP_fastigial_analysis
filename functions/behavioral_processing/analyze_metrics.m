@@ -155,7 +155,7 @@ for i = 1:length(segment_fields)
             search_center = Segment(s,1);
         end
         search_start = search_center - 20;
-        search_end   = search_center + 200;
+        search_end   = search_center + 300;
 
         % Bounds check on search window
         if search_start <= 0 || search_end > length(Data.yaw_vel)

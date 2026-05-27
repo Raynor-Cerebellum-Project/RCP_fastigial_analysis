@@ -33,15 +33,14 @@ err_sems  = nan(1, n_groups);
 sig_labels = strings(1, n_groups - 1);
 
 %% === Metadata ===
-is_ipsi = contains(side_label, 'pos');
+is_ipsi = contains(side_label, 'pos') || contains(side_label, 'ipsi');
 suffix = ternary(is_ipsi, 'ipsi', 'contra');
 
-% === Metadata ===
-if contains(side_label, 'ipsi') || contains(side_label, 'neg')
-    suffix   = 'ipsi';
-    polarity = side_label;  % use the full label as-is
+% Strip delay suffix to get bare label, e.g. 'active_like_stim_pos' or 'ipsi'
+tokens = regexp(side_label, '^(.+?)_(\d+|nan)$', 'tokens', 'ignorecase');
+if ~isempty(tokens)
+    polarity = tokens{1}{1};
 else
-    suffix   = 'contra';
     polarity = side_label;
 end
 
@@ -206,7 +205,7 @@ sig_labels1 = strings(n_metrics, n_groups-1);
 
 for m = 1:n_metrics
     metric_field = erase(group1_metrics{m}, '_mean');
-    base_label = sprintf('%s_nan', side_label);
+    base_label = sprintf('%s_nan', polarity);
 
     % === Get baseline values ===
     if strcmp(metric_field, 'all_err_abs')
@@ -217,7 +216,7 @@ for m = 1:n_metrics
     base_vals = base_vals(~isnan(base_vals));
 
     for i = 1:n_groups
-        cond_label = sprintf('%s_%s', side_label, delay_suffixes{i});
+        cond_label = sprintf('%s_%s', polarity, delay_suffixes{i});
 
         % === Get condition values ===
         if strcmp(metric_field, 'all_err_abs')
@@ -291,7 +290,7 @@ sample_sizes(1) = numel(base_vals);  % base_vals already defined outside the loo
 
 % Get condition sizes
 for i = 2:n_groups
-    cond_label = sprintf('%s_%s', side_label, delay_suffixes{i});
+    cond_label = sprintf('%s_%s', polarity, delay_suffixes{i});
     vals = cond_data_list.(cond_label).(metric_field);
     vals = vals(~isnan(vals));
     sample_sizes(i) = numel(vals);  % because baseline is at index 1
@@ -303,7 +302,7 @@ for m = 1:n_metrics2
     base_vals = base_vals(~isnan(base_vals));
 
     for i = 1:n_groups
-        cond_label = sprintf('%s_%s', side_label, delay_suffixes{i});
+        cond_label = sprintf('%s_%s', polarity, delay_suffixes{i});
         vals = cond_data_list.(cond_label).(metric_field);
         vals = vals(~isnan(vals));
 
@@ -488,11 +487,4 @@ function val = ternary(cond, a, b)
     end
 end
 
-end
-function out = ternary(cond, valTrue, valFalse)
-    if cond
-        out = valTrue;
-    else
-        out = valFalse;
-    end
 end

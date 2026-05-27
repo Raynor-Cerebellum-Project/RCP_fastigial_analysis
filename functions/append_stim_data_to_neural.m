@@ -5,7 +5,7 @@
 %
 % Usage: set session_root then run.
 
-session_root = '/Volumes/data/Current Project Databases - NHP/2025 Cerebellum prosthesis/Nike/20260318_NRR_RW025_fastig';
+session_root = '/Volumes/data/Current Project Databases - NHP/2025 Cerebellum prosthesis/Nike/20260410_NRR_RW030_fastig';
 
 calibrated_root = fullfile(session_root, 'Calibrated');
 intan_root      = fullfile(session_root, 'Intan');

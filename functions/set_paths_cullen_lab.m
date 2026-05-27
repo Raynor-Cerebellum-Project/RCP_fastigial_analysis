@@ -10,7 +10,7 @@ if contains(hostname, {'navon', 'navona', 'gaon', 'foo'})
     base_root = '/cis/net/io109/data/RCPstorage';
 else
     % raynor-pc: traverse up from code location
-    base_root = fileparts(fileparts(fileparts(fileparts(fileparts(fileparts(this_file_path))))));
+    base_root = fileparts(fileparts(fileparts(fileparts(this_file_path))));
 end
 
 base_folder = fullfile(base_root, session);
