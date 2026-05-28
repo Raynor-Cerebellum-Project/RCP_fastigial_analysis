@@ -5,6 +5,7 @@
 # Data and results
 data/
 results/
+figures/
 
 # Python
 __pycache__/
