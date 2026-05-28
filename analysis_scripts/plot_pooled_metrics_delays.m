@@ -111,7 +111,7 @@ trace_colors = [
 
 n_delays = numel(delays);
 
-figure('Position', [100 100 1400 550]);
+figure('Position', [100 100 1300 600]);
 t = tiledlayout(2, n_metrics, 'TileSpacing', 'compact', 'Padding', 'compact');
 t.OuterPosition = [0.02, 0.10, 0.96, 0.82];
 
