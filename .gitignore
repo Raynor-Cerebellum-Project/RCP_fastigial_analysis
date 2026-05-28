@@ -5,7 +5,7 @@
 # Data and results
 data/
 results/
-figures/
+pooled_figures/
 
 # Python
 __pycache__/
