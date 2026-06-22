@@ -8,7 +8,7 @@ addpath(utils_path);
 %% === User Configuration ===
 session    = '20260423_NRR_RW033_fastig';
 subject    = 'Nike'; % 'Bert' or 'Nike'
-side       = 'ipsi'; % 'ipsi' or 'contra'
+side       = 'contra'; % 'ipsi' or 'contra'
 cond_nums  = [9, 8, 3];
 offset     = false;
 use_ci     = true;
@@ -92,7 +92,7 @@ for k = 1:3
 end
 % vel_range = max(vel_all(:)) - min(vel_all(:));
 % yl_vel = [min(vel_all(:)) - 0.05*vel_range, max(vel_all(:)) + 0.05*vel_range];
-yl_vel = [-350 50]; % manual
+yl_vel = [-50 350]; % manual
 
 pos_range = max(pos_all(:)) - min(pos_all(:));
 yl_pos = [min(pos_all(:)) - 0.05*pos_range, max(pos_all(:)) + 0.05*pos_range];

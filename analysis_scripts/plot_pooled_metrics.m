@@ -179,17 +179,17 @@ end
 sgtitle('Baseline vs Condition (Pooled Nike and Bert)', 'FontWeight', 'bold', 'FontSize', 12);
 
 %% Save
-save_name = 'pooled_baseline_vs_condition';
-save_folder = fullfile(pwd, '..', 'pooled_figures');
-subfolders = {'figFigs', 'svgFigs', 'pngFigs'};
-for k = 1:numel(subfolders)
-    if ~exist(fullfile(save_folder, subfolders{k}), 'dir')
-        mkdir(fullfile(save_folder, subfolders{k}));
-    end
-end
-
-savefig(gcf, fullfile(save_folder, 'figFigs', [save_name '.fig']));
-set(gcf, 'Renderer', 'painters');
-print(gcf, fullfile(save_folder, 'svgFigs', [save_name '.svg']), '-dsvg');
-print(gcf, fullfile(save_folder, 'pngFigs', [save_name '.png']), '-dpng', '-r300');
-fprintf('Saved to %s\n', save_folder);
+% save_name = 'pooled_baseline_vs_condition';
+% save_folder = fullfile(pwd, '..', 'pooled_figures');
+% subfolders = {'figFigs', 'svgFigs', 'pngFigs'};
+% for k = 1:numel(subfolders)
+%     if ~exist(fullfile(save_folder, subfolders{k}), 'dir')
+%         mkdir(fullfile(save_folder, subfolders{k}));
+%     end
+% end
+% 
+% savefig(gcf, fullfile(save_folder, 'figFigs', [save_name '.fig']));
+% set(gcf, 'Renderer', 'painters');
+% print(gcf, fullfile(save_folder, 'svgFigs', [save_name '.svg']), '-dsvg');
+% print(gcf, fullfile(save_folder, 'pngFigs', [save_name '.png']), '-dpng', '-r300');
+% fprintf('Saved to %s\n', save_folder);

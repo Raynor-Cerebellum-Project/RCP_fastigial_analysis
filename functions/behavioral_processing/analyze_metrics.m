@@ -325,7 +325,7 @@ for i = 1:length(segment_fields)
     end
 
     % Sign correction for endpoint error
-    if contains(field, '_pos')
+    if contains(field, '_pos') || contains(field, 'contra')
         ref_EP = EndPoint_pos;
         sign_factor = 1;
     else

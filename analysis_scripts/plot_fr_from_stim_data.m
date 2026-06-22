@@ -4,12 +4,12 @@ addpath(genpath(fullfile('..', 'functions')));  % assumes functions is parallel 
 
 %% Define base root
 % Prompt or detect machine-specific root path
-base_root = set_paths_cullen_lab();
-
+% base_root = set_paths_cullen_lab();
+base_root = '\\cullenstor\data\';
 %% Define folders
 code_root = fullfile(base_root, 'Current Project Databases - NHP', '2025 Cerebellum prosthesis', 'Bryan', 'Analysis Codes');
-session   = 'BL_RW_003_Session_1';
-base_folder = fullfile(base_root, 'Current Project Databases - NHP', '2025 Cerebellum prosthesis', 'Bryan', 'Data', session);
+% session   = 'BL_RW_003_Session_1';
+base_folder = fullfile(base_root, 'Current Project Databases - NHP\2025 Cerebellum prosthesis\Bert\BL_RW_003_Session_1');
 
 % Paths
 intan_folder = fullfile(base_folder, 'Intan');

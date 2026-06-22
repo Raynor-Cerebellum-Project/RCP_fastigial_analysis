@@ -30,7 +30,7 @@ clear all; close all; clc;
 addpath(genpath(fullfile('..', 'functions')));
 
 %% --- Setup Paths and Define session
-session = 'Nike/20260410_NRR_RW030_fastig';
+session = 'Nike/20260423_NRR_RW033_fastig';
 % Bert/BL_RW_003_Session_1 
 % 
 % Nike/20260304_NRR_RW020_Fastig - missing position data
@@ -146,7 +146,7 @@ switch session
         segment_fields_random = {'ipsi_nan' , 'contra_nan', 'ipsi_0' , 'contra_0', 'ipsi_100' , 'contra_100', 'ipsi_200' , 'contra_200'};
         segment_fields = {'ipsi' , 'contra'};
     case 'Nike/20260423_NRR_RW033_fastig'
-        EndPoint_pos = 43; EndPoint_neg = -54;
+        EndPoint_pos = 45; EndPoint_neg = -54;
         % 1-9 segmented
         baseline_file_nums = 1;
         trial_indices = [3:5, 8:9];

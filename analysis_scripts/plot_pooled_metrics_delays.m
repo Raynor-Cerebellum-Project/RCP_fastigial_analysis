@@ -113,7 +113,8 @@ n_delays = numel(delays);
 
 figure('Position', [100 100 1300 600]);
 t = tiledlayout(2, n_metrics, 'TileSpacing', 'compact', 'Padding', 'compact');
-t.OuterPosition = [0.02, 0.10, 0.96, 0.82];
+t.OuterPosition = [0.02, 0.18, 0.96, 0.74];
+
 
 for si = 1:2
     canonical = sides{si};
@@ -189,18 +190,20 @@ swatch_w = 0.03;
 swatch_h = 0.018;
 text_x   = 0.09;
 text_w   = 0.88;
-y_start  = 0.085;
+y_start  = 0.08;
 y_step   = 0.024;
 max_label_len = max(cellfun(@numel, delay_labels)) + 6;
-
-% Two columns: ipsi on left, contra on right
-col_offsets = [0, 0.45];  % x offset for ipsi vs contra columns
+col_offsets = [0, 0.45];
 
 for si = 1:2
     delay_keys_side = delay_keys_sides{si};
     col_x = col_offsets(si);
 
-    % Side header
+    total_n = 0;
+    for d = 1:n_delays
+        total_n = total_n + sum(combined.(delay_keys_side{d}).n_trials);
+    end
+    
     annotation('textbox', [swatch_x + col_x, y_start + 0.025, 0.4, 0.02], ...
         'String', side_labels_short{si}, ...
         'EdgeColor', 'none', 'FontSize', 9, 'FontWeight', 'bold', ...
@@ -210,16 +213,10 @@ for si = 1:2
         dk = delay_keys_side{d};
         n_k = combined.(dk).n_trials;
         raw_label = [delay_labels{d} ':'];
-        label_part = [raw_label, repmat(' ', 1, max_label_len - numel(raw_label) + 4)];
-        counts_part = '';
-        for k = 1:size(condition_list, 1)
-            if k <= numel(n_k)
-                entry = sprintf('%s: %d', session_short{k}, n_k(k));
-                counts_part = [counts_part, entry, repmat(' ', 1, 24 - numel(entry))];
-            end
-        end
-        n_line = [label_part, counts_part];
-
+        n_line = sprintf('%s  Total: %d  (%s)', ...
+            raw_label, sum(n_k), ...
+            strjoin(arrayfun(@(k) sprintf('%s: %d', session_short{k}, n_k(k)), ...
+                1:size(condition_list,1), 'UniformOutput', false), ', '));
         y_pos = y_start - (d-1) * y_step;
         annotation('rectangle', [swatch_x + col_x, y_pos, swatch_w, swatch_h], ...
             'FaceColor', trace_colors(d,:), 'EdgeColor', 'k', 'LineWidth', 0.5);
@@ -228,8 +225,6 @@ for si = 1:2
             'EdgeColor', 'none', 'FontSize', 9, 'VerticalAlignment', 'middle');
     end
 end
-
-t.OuterPosition = [0.02, 0.10 + (n_delays * y_step) + 0.03, 0.96, 0.82 - (n_delays * y_step) - 0.01];
 sgtitle('Delay Comparison (Pooled Nike and Bert)', 'FontWeight', 'bold', 'FontSize', 12);
 %% Save
 save_folder = fullfile(pwd, '..', 'pooled_figures');
