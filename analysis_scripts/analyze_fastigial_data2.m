@@ -19,21 +19,51 @@
 %   - Data.segments.ipsi and .contra are [start end] samples
 %   - yaw_vel exists but is not required for this analysis
 %% ============================================================
-
+ %pooled data location: \\cullenstor\data\Current Project Databases - NHP\2025 Cerebellum prosthesis\Bryan\RCP_fastigial_analysis\Pooled_neural_data
+ % where "results" are stored for each animal
 clear
 close all
 
 %% LOAD DATA
+%-----BERT-----------
+% good_neurons = [107 38 42 18 43 111 47 24 10 40 76 55 31 28]; %active condition labeling
+% 
+% load(fullfile('\\cullenstor\data\Current Project Databases - NHP\2025 Cerebellum prosthesis\Bert\BL_RW_003_Session_1\Calibrated\IntanFile_1\Seperate cells', ...
+%     'BL_closed_loop_STIM_003_003_Cal.mat')) %passive filepath Bert S3
+% pas_Data = Data;
+% 
+% load(fullfile('\\cullenstor\data\Current Project Databases - NHP\2025 Cerebellum prosthesis\Bert\BL_RW_003_Session_1\Calibrated\IntanFile_1\Seperate cells', ...
+%     'BL_closed_loop_STIM_003_004_Cal.mat')) %passive filepath Bert S3
+% act_Data = Data;
 
-good_neurons = [107 38 42 18 43 111 47 24 10 40 76 55 31 28];
+%-----NIKE----------
+good_neurons = [49 50 19 17 16 22 46 51]; %active condition labeling
 
-load('BL_closed_loop_STIM_003_003_Cal.mat')   % Passive
+load(fullfile('\\cullenstor\data\Current Project Databases - NHP\2025 Cerebellum prosthesis\Nike\20260410_NRR_RW030_fastig\Calibrated\IntanFile_6\Seperate cells', ...
+    'NRR_RW030_006_Cal.mat')) %passive filepath Nike S030
 pas_Data = Data;
 
-load('BL_closed_loop_STIM_003_004_Cal.mat')   % Active
-act_Data = Data;
+% pas_Data.fr_7 = pas_Data.fr_1; %Conversion Nike S027 passive to active neurons
+% pas_Data.fr_34 = pas_Data.fr_58;
+% pas_Data.fr_39 = pas_Data.fr_11;
+% pas_Data.fr_36 = pas_Data.fr_12;
+% pas_Data.fr_11 = pas_Data.fr_23;
+% pas_Data.fr_1 = pas_Data.fr_8;
+% pas_Data.fr_20 = pas_Data.fr_17;
 
-%% PARAMETERS
+pas_Data.fr_49 = pas_Data.fr_36; %Conversion Nike S027 passive to active neurons
+pas_Data.fr_50 = pas_Data.fr_42;
+pas_Data.fr_19 = pas_Data.fr_37;
+pas_Data.fr_17 = pas_Data.fr_44;
+pas_Data.fr_16 = pas_Data.fr_47;
+pas_Data.fr_22 = pas_Data.fr_46;
+pas_Data.fr_46 = pas_Data.fr_31;
+pas_Data.fr_51 = pas_Data.fr_22;
+
+load(fullfile('\\cullenstor\data\Current Project Databases - NHP\2025 Cerebellum prosthesis\Nike\20260410_NRR_RW030_fastig\Calibrated\IntanFile_14\Seperate cells', ...
+    'NRR_RW030_014_Cal.mat')) %passive filepath Nike S030
+act_Data = Data;
+%--------------------------
 
 %% PARAMETERS
 
@@ -371,7 +401,6 @@ T = table( ...
      'PassiveDoM','ActiveDoM'})
 
 disp(T)
-
 
 
 %% ============================================================

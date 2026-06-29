@@ -3,8 +3,9 @@ clear
 colordef white
 paradigms = {  
 
-     'BL_closed_loop_STIM_003_004_Cal',... 
-
+%      'BL_closed_loop_STIM_003_004_Cal',... 
+  'NRR_RW030_014_Cal',... 
+  
      };
 
 %  
@@ -44,8 +45,8 @@ for paradigm_index = 1:length(paradigms)
     load([paradigm '.mat'])
     
      
-        unit = Data.ua_107;
-        fr = Data.fr_107;
+        unit = Data.ua_49;
+        fr = Data.fr_42;
         
         
     for side_index = 1:length(sides)
@@ -160,8 +161,8 @@ linkaxes(ax(4,:),'xy')
         vel = vel - mean(vel(1:10));
         [pk loc] = max(abs(vel));
         abs_loc = loc+Data.segments.(side)(i,1)
-        Data.segments2.(side)(i,1)=abs_loc-700; %-500 ***modify this window for motor command condition to not align with peak
-        Data.segments2.(side)(i,2)=abs_loc+300; %500
+        Data.segments2.(side)(i,1)=abs_loc-800; %-500 ***modify this window for motor command condition to not align with peak
+        Data.segments2.(side)(i,2)=abs_loc+400; %500
         
      end
 
@@ -174,8 +175,8 @@ linkaxes(ax(4,:),'xy')
         [pk loc] = max(abs(jerk(200:600)));
 %         [pk loc] = max(jerk(150:500)*-1);
         abs_loc = loc+Data.segments2.(side)(i,1)+200;
-        Data.segments3.(side)(i,1)=abs_loc-900; %-500 ***modify this window for motor command condition to not align with peak
-        Data.segments3.(side)(i,2)=abs_loc+100; %500
+        Data.segments3.(side)(i,1)=abs_loc-800; %-500 ***modify this window for motor command condition to not align with peak
+        Data.segments3.(side)(i,2)=abs_loc+400; %500
         
      end
      
