@@ -1,32 +1,49 @@
-function stimOnsets = findStimOnsets(stimSignal,fs)
+function stimOnsets = findStimOnsets(stimSignal,fsNeural,fsBehavior)
 
-% Detect first pulse of each stimulation train
+% Detect onset of each stimulation train
 
 stimSignal = abs(stimSignal);
 
-thr = 0.5*max(stimSignal);
+%% Threshold
 
-pulseIdx = find(stimSignal > thr);
+thr = 0.5 * max(stimSignal);
 
-if isempty(pulseIdx)
+stimBinary = stimSignal > thr;
 
-    stimOnsets = [];
-    return
+%% Fill gaps between individual pulses
 
-end
+% Any gap shorter than 150 ms is considered part of the same train
+gapSamples = round(0.15*fsNeural);
 
-refractory = round(0.20*fs);     % 200 ms
+d = diff([0; stimBinary; 0]);
 
-stimOnsets = pulseIdx(1);
+starts = find(d==1);
+ends   = find(d==-1)-1;
 
-for k = 2:length(pulseIdx)
+% Merge trains separated by short gaps
+newStarts = starts(1);
+newEnds = [];
 
-    if pulseIdx(k)-stimOnsets(end) > refractory
+currentStart = starts(1);
+currentEnd   = ends(1);
 
-        stimOnsets(end+1) = pulseIdx(k);
+for k = 2:length(starts)
 
+    if starts(k) - currentEnd < gapSamples
+        currentEnd = ends(k);
+    else
+        newEnds(end+1) = currentEnd;
+        newStarts(end+1) = starts(k);
+        currentStart = starts(k);
+        currentEnd = ends(k);
     end
 
 end
+
+newEnds(end+1) = currentEnd;
+
+%% Convert to behavior samples
+
+stimOnsets = round(newStarts * fsBehavior / fsNeural);
 
 end

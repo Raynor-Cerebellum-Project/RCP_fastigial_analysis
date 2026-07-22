@@ -4,7 +4,7 @@ colordef white
 paradigms = {  
 
 %      'BL_closed_loop_STIM_003_004_Cal',... 
-  'NRR_RW030_014_Cal',... 
+  'NRR_RW027_014_Cal',... 
   
      };
 
@@ -45,8 +45,8 @@ for paradigm_index = 1:length(paradigms)
     load([paradigm '.mat'])
     
      
-        unit = Data.ua_49;
-        fr = Data.fr_42;
+        unit = Data.ua_16;
+        fr = Data.fr_16;
         
         
     for side_index = 1:length(sides)
@@ -192,35 +192,35 @@ for side_idx = 1:length(sides)
         hsx = (Data.(stim_var2)(Data.(seg).(side)(i,1):Data.(seg).(side)(i,2)));
         hsx = hsx - mean(hsx(1:10));
 %         hsx_resampled = resample(hsx,round(1000/length(hsx)*10000),10000);
-        hsx_stim(:,i) = hsx(1:1000);
+        hsx_stim(:,i) = hsx(1:1100);
     
         hsx_vel = (Data.(stim_var)(Data.(seg).(side)(i,1):Data.(seg).(side)(i,2)));
         hsx_vel = hsx_vel - mean(hsx_vel(1:10));
 %         hsx_vel_resampled = resample(hsx_vel,round(1000/length(hsx)*10000),10000);
-        hsx_vel_stim(:,i) = hsx_vel(1:1000);
+        hsx_vel_stim(:,i) = hsx_vel(1:1100);
         
                
         hsx_jerk = (Data.(stim_var3)(Data.(seg).(side)(i,1):Data.(seg).(side)(i,2)));
         hsx_jerk = hsx_jerk - mean(hsx_jerk(1:10));
 %         hsx_jerk_resampled = resample(hsx_jerk,round(1000/length(hsx)*10000),10000);
-        hsx_jerk_stim(:,i) = hsx_jerk(1:1000);
+        hsx_jerk_stim(:,i) = hsx_jerk(1:1100);
         
         fr_datas = (output(Data.(seg).(side)(i,1):Data.(seg).(side)(i,2)));
-        fr_data(:,i) = fr_datas(1:1000);
+        fr_data(:,i) = fr_datas(1:1100);
         
 
 
     
     end
-    time = 1:1000;
-    x_ax = [00 1000];
+    time = 1:1100;
+    x_ax = [00 1100];
     figure; 
     subplot(4,1,1)
-    STDplot(time(1:1000),hsx_stim',colors(paradigm_index,:));
+    STDplot(time(1:1100),hsx_stim',colors(paradigm_index,:));
     box off
     xlim(x_ax);
     subplot(4,1,2)
-    STDplot(time(1:1000),hsx_vel_stim',colors(paradigm_index,:));
+    STDplot(time(1:1100),hsx_vel_stim',colors(paradigm_index,:));
     box off
     xlim(x_ax);
     subplot(4,1,3)

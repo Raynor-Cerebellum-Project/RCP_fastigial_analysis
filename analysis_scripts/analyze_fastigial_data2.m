@@ -51,7 +51,7 @@ pas_Data = Data;
 % pas_Data.fr_1 = pas_Data.fr_8;
 % pas_Data.fr_20 = pas_Data.fr_17;
 
-pas_Data.fr_49 = pas_Data.fr_36; %Conversion Nike S027 passive to active neurons
+pas_Data.fr_49 = pas_Data.fr_36; %Conversion Nike S030 passive to active neurons
 pas_Data.fr_50 = pas_Data.fr_42;
 pas_Data.fr_19 = pas_Data.fr_37;
 pas_Data.fr_17 = pas_Data.fr_44;

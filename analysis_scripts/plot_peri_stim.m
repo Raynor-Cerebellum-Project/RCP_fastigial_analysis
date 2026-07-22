@@ -33,7 +33,7 @@ win_pre_s  = 0.4;
 win_post_s = 0.4;
 
 data_cond  = cal_file.Data;
-cond_title = 'Passive HoB';
+cond_title = 'Stim';
 
 % all units present in spike_train, excluding any non-unit fields
 all_unit_names = fieldnames(spike_train);
@@ -171,82 +171,87 @@ n_bins_psth    = length(bin_edges_psth) - 1;
 t_psth         = bin_edges_psth(1:end-1) + 1/(2*fs_vel);
 for direction = 1:2
     if direction == 1
-            peak_times_cur = peak_times_contra;
-            dir_label = 'Contra';
+        peak_times_cur = peak_times_contra;
+        dir_label = 'Contra';
     else
-            peak_times_cur = peak_times_ipsi;
-            dir_label = 'Ipsi';
+        peak_times_cur = peak_times_ipsi;
+        dir_label = 'Ipsi';
     end
-        heatmap_data = zeros(n_units, n_bins_psth);  % (units, time)
+    heatmap_data = zeros(n_units, n_bins_psth);  % (units, time)
+    unit_total_spikes = zeros(n_units, 1);
     for u = 1:n_units
-            unit_st = double(spike_train.(all_unit_names{u}));
-            peaks    = peak_times_cur;
-            n_trials = length(peaks);
-            psth_acc = zeros(1, n_bins_psth);
-            intan_start   = data_cond.Intan_idx(1);
-            spk_all       = unit_st(unit_st >= intan_start);
-            spike_t_s_all = (spk_all - intan_start) / 30000;
-    for tr = 1:n_trials
-                t0        = peaks(tr);
-                in_win    = spike_t_s_all >= (t0 - win_pre_s) & spike_t_s_all <= (t0 + win_post_s);
-                spk_rel   = spike_t_s_all(in_win) - t0;
-                psth_acc  = psth_acc + histcounts(spk_rel, bin_edges_psth);
+        unit_st = double(spike_train.(all_unit_names{u}));
+        peaks    = peak_times_cur;
+        n_trials = length(peaks);
+        psth_acc = zeros(1, n_bins_psth);
+        intan_start   = data_cond.Intan_idx(1);
+        spk_all       = unit_st(unit_st >= intan_start);
+        spike_t_s_all = (spk_all - intan_start) / 30000;
+        for tr = 1:n_trials
+            t0        = peaks(tr);
+            in_win    = spike_t_s_all >= (t0 - win_pre_s) & spike_t_s_all <= (t0 + win_post_s);
+            spk_rel   = spike_t_s_all(in_win) - t0;
+            psth_acc  = psth_acc + histcounts(spk_rel, bin_edges_psth);
+        end
+        unit_total_spikes(u) = sum(psth_acc);
+        mean_spike_vec = psth_acc / n_trials;
+        heatmap_data(u, :) = fr_estimate(mean_spike_vec(:), rate_mode, cutoff_freq, fs_vel);
     end
-            mean_spike_vec = psth_acc / n_trials;
-            heatmap_data(u, :) = fr_estimate(mean_spike_vec(:), rate_mode, cutoff_freq, fs_vel);
-    end
-        unit_labels = strrep(all_unit_names, 'unit_', '');
-        heatmap_data_raw = heatmap_data;  % save BEFORE z-scoring
+
+    % Drop units with zero spikes in the window before z-scoring/plotting
+    active_mask = unit_total_spikes > 0;
+    heatmap_data = heatmap_data(active_mask, :);
+    unit_labels  = strrep(all_unit_names(active_mask), 'unit_', '');
+    n_units_active = sum(active_mask);
+
+    heatmap_data_raw = heatmap_data;  % save BEFORE z-scoring
     % Z-score each unit across time
-    for u = 1:n_units
-            mu = mean(heatmap_data(u, :));
-            sg = std(heatmap_data(u, :));
-    if sg < 1e-6, sg = 1; end
-            heatmap_data(u, :) = (heatmap_data(u, :) - mu) / sg;
+    for u = 1:n_units_active
+        mu = mean(heatmap_data(u, :));
+        sg = std(heatmap_data(u, :));
+        if sg < 1e-6, sg = 1; end
+        heatmap_data(u, :) = (heatmap_data(u, :) - mu) / sg;
     end
-        heatmap_data_zscore_unordered = heatmap_data;  % save z-scored BEFORE sorting
+    heatmap_data_zscore_unordered = heatmap_data;
     % Sort by peak time
-        [~, peak_idx]      = max(heatmap_data, [], 2);
-        [~, sort_order]    = sort(peak_idx);
-        heatmap_data_sorted = heatmap_data(sort_order, :);
-        unit_labels_sorted  = unit_labels(sort_order);
-        figure;
-    % Raw firing rate
-        subplot(1, 3, 1)
-        imagesc(t_psth, 1:n_units, heatmap_data_raw);
-        xline(0, 'r--', 'LineWidth', 1.5);
-        colormap(gca, 'jet');
-        colorbar;
-        xlabel('Time from peak (s)');
-        title(sprintf('Raw FR (%s)', cond_title));
-        yticks(1:10:n_units);
-        yticklabels(unit_labels(1:10:n_units));
-        box off;
-    % Z-scored, unordered
-        subplot(1, 3, 2)
-        imagesc(t_psth, 1:n_units, heatmap_data_zscore_unordered);
-        xline(0, 'r--', 'LineWidth', 1.5);
-        colormap(gca, 'jet');
-        clim([-2 2]);
-        colorbar;
-        xlabel('Time from peak (s)');
-        title('Z-scored, by unit ID');
-        yticks(1:10:n_units);
-        yticklabels(unit_labels(1:10:n_units));
-        box off;
-    % Z-scored, sorted
-        subplot(1, 3, 3)
-        imagesc(t_psth, 1:n_units, heatmap_data_sorted);
-        xline(0, 'r--', 'LineWidth', 1.5);
-        colormap(gca, 'jet');
-        clim([-2 2]);
-        colorbar;
-        xlabel('Time from peak (s)');
-        title('Z-scored, ordered by peak time');
-        yticks(1:10:n_units);
-        yticklabels(unit_labels_sorted(1:10:n_units));
-        box off;
-        sgtitle(sprintf('FR heatmaps of all units - %s (%d units)', dir_label, n_units), 'Fontsize', 13);
+    [~, peak_idx]      = max(heatmap_data, [], 2);
+    [~, sort_order]    = sort(peak_idx);
+    heatmap_data_sorted = heatmap_data(sort_order, :);
+    unit_labels_sorted  = unit_labels(sort_order);
+    figure;
+    subplot(1, 3, 1)
+    imagesc(t_psth, 1:n_units_active, heatmap_data_raw);
+    xline(0, 'r--', 'LineWidth', 1.5);
+    colormap(gca, 'bone');
+    colorbar;
+    xlabel('Time from peak (s)');
+    title(sprintf('Raw FR (%s)', cond_title));
+    yticks(1:10:n_units_active);
+    yticklabels(unit_labels(1:10:n_units_active));
+    box off;
+    subplot(1, 3, 2)
+    imagesc(t_psth, 1:n_units_active, heatmap_data_zscore_unordered);
+    xline(0, 'r--', 'LineWidth', 1.5);
+    colormap(gca, 'bone');
+    clim([-2 2]);
+    colorbar;
+    xlabel('Time from peak (s)');
+    title('Z-scored, by unit ID');
+    yticks(1:10:n_units_active);
+    yticklabels(unit_labels(1:10:n_units_active));
+    box off;
+    subplot(1, 3, 3)
+    imagesc(t_psth, 1:n_units_active, heatmap_data_sorted);
+    xline(0, 'r--', 'LineWidth', 1.5);
+    colormap(gca, 'bone');
+    clim([-2 2]);
+    colorbar;
+    xlabel('Time from peak (s)');
+    title('Z-scored, ordered by peak time');
+    yticks(1:10:n_units_active);
+    yticklabels(unit_labels_sorted(1:10:n_units_active));
+    box off;
+    sgtitle(sprintf('FR heatmaps of all units - %s (%d/%d units active)', dir_label, n_units_active, n_units), 'Fontsize', 13);
 end
 
 %% Local functions

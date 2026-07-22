@@ -1,6 +1,8 @@
 %%
+%Data storage to post: cd('\\cullenstor\data\Current Project Databases - NHP\2025 Cerebellum prosthesis\Pooled_Fastigial_data')
+
 %Pooled analysis - comparing onset and offset timing
-%Directory: \\cullenstor\data\Current Project Databases - NHP\2025 Cerebellum prosthesis\Bryan\RCP_fastigial_analysis\Pooled_neural_data
+%Directory: cd('\\cullenstor\data\Current Project Databases - NHP\2025 Cerebellum prosthesis\Bryan\RCP_fastigial_analysis\Pooled_neural_data')
 
 clear
 close all
@@ -186,64 +188,32 @@ clustering_test( ...
 %Smaller value means more closely locked to that time point (onset or offset)
 
 %Passive preferred
-onset_lock = abs(1000*pool.passive.pref_onset);
-offset_lock = abs(1000*pool.passive.pref_offset);
-
-valid = ~isnan(onset_lock) & ~isnan(offset_lock);
-
-[p,h,stats] = signrank( ...
-    onset_lock(valid), ...
-    offset_lock(valid));
-
-fprintf('\nPassive Preferred\n')
-fprintf('Onset median = %.1f ms\n',median(onset_lock(valid)))
-fprintf('Offset median = %.1f ms\n',median(offset_lock(valid)))
-fprintf('signrank p = %.4f\n',p)
+paired_ttest( ...
+    abs(1000*pool.passive.pref_onset), ...
+    abs(1000*pool.passive.pref_offset), ...
+    'Onset','Offset', ...
+    'Passive Preferred')
 
 %passive nonpref
-onset_lock = abs(1000*pool.passive.nonpref_onset);
-offset_lock = abs(1000*pool.passive.nonpref_offset);
-
-valid = ~isnan(onset_lock) & ~isnan(offset_lock);
-
-[p,h,stats] = signrank( ...
-    onset_lock(valid), ...
-    offset_lock(valid));
-
-fprintf('\nPassive Nonpreferred\n')
-fprintf('Onset median = %.1f ms\n',median(onset_lock(valid)))
-fprintf('Offset median = %.1f ms\n',median(offset_lock(valid)))
-fprintf('signrank p = %.4f\n',p)
+paired_ttest( ...
+    abs(1000*pool.passive.nonpref_onset), ...
+    abs(1000*pool.passive.nonpref_offset), ...
+    'Onset','Offset', ...
+    'Passive NonPreferred')
 
 %Active pref
-onset_lock = abs(1000*pool.active.pref_onset);
-offset_lock = abs(1000*pool.active.pref_offset);
-
-valid = ~isnan(onset_lock) & ~isnan(offset_lock);
-
-[p,h,stats] = signrank( ...
-    onset_lock(valid), ...
-    offset_lock(valid));
-
-fprintf('\nActive Preferred\n')
-fprintf('Onset median = %.1f ms\n',median(onset_lock(valid)))
-fprintf('Offset median = %.1f ms\n',median(offset_lock(valid)))
-fprintf('signrank p = %.4f\n',p)
+paired_ttest( ...
+    abs(1000*pool.active.pref_onset), ...
+    abs(1000*pool.active.pref_offset), ...
+    'Onset','Offset', ...
+    'Active Preferred')
 
 %Active nonpref
-onset_lock = abs(1000*pool.active.nonpref_onset);
-offset_lock = abs(1000*pool.active.nonpref_offset);
-
-valid = ~isnan(onset_lock) & ~isnan(offset_lock);
-
-[p,h,stats] = signrank( ...
-    onset_lock(valid), ...
-    offset_lock(valid));
-
-fprintf('\nActive Nonpreferred\n')
-fprintf('Onset median = %.1f ms\n',median(onset_lock(valid)))
-fprintf('Offset median = %.1f ms\n',median(offset_lock(valid)))
-fprintf('signrank p = %.4f\n',p)
+paired_ttest( ...
+    abs(1000*pool.active.nonpref_onset), ...
+    abs(1000*pool.active.non    `pref_offset), ...
+    'Onset','Offset', ...
+    'Passive Preferred')
 
 %%
 %Compare timing of peak response between active and passive conditions
@@ -443,4 +413,25 @@ title(sprintf('%s\n\\chi^2 = %.2f, p = %.4f', ...
 legend({'Observed','Uniform expectation'})
 box off
 
+end
+
+function paired_ttest(x,y,label1,label2,titleText)
+
+valid = ~isnan(x) & ~isnan(y);
+
+x = x(valid);
+y = y(valid);
+
+[~,p,~,stats] = ttest(x,y);
+
+fprintf('\n%s\n',titleText)
+
+fprintf('%s = %.1f ± %.1f (n=%d)\n', ...
+    label1, mean(x), std(x), numel(x))
+
+fprintf('%s = %.1f ± %.1f (n=%d)\n', ...
+    label2, mean(y), std(y), numel(y))
+
+fprintf('Paired t-test: t(%d)=%.2f, p=%.4f\n', ...
+    stats.df, stats.tstat, p)
 end
