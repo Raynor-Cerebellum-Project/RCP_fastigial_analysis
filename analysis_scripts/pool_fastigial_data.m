@@ -206,12 +206,12 @@ paired_ttest( ...
     abs(1000*pool.active.pref_onset), ...
     abs(1000*pool.active.pref_offset), ...
     'Onset','Offset', ...
-    'Active Preferred')
+    'Active Preferred');
 
 %Active nonpref
 paired_ttest( ...
     abs(1000*pool.active.nonpref_onset), ...
-    abs(1000*pool.active.non    `pref_offset), ...
+    abs(1000*pool.active.nonpref_offset), ...
     'Onset','Offset', ...
     'Passive Preferred')
 
@@ -377,6 +377,53 @@ ranovatbl = ranova(rm,...
     'WithinModel','Condition*Event');
 
 ranovatbl(:,{'SumSq','DF','F','pValue'})
+
+%% ============================================================
+% Compare temporal dispersion (Passive vs Active)
+%
+% H0: Passive and Active have equal variance
+% H1: Active responses are more broadly distributed
+%% ============================================================
+
+comparisons = {
+    pool.passive.pref_onset,     pool.active.pref_onset,     'Preferred Onset';
+    pool.passive.pref_offset,    pool.active.pref_offset,    'Preferred Offset';
+    pool.passive.nonpref_onset,  pool.active.nonpref_onset,  'Nonpreferred Onset';
+    pool.passive.nonpref_offset, pool.active.nonpref_offset, 'Nonpreferred Offset'};
+
+fprintf('\n=============================================\n');
+fprintf('Comparison of temporal dispersion\n');
+fprintf('=============================================\n');
+
+for c = 1:size(comparisons,1)
+
+    passive = comparisons{c,1};
+    active  = comparisons{c,2};
+
+    passive = passive(~isnan(passive));
+    active  = active(~isnan(active));
+
+    values = [passive(:); active(:)];
+    groups = [ones(numel(passive),1);
+              2*ones(numel(active),1)];
+
+    % Brown-Forsythe test for equality of variance
+    p = vartestn(values,...
+                 groups,...
+                 'TestType','BrownForsythe',...
+                 'Display','off');
+
+    fprintf('\n%s\n',comparisons{c,3});
+    fprintf('Passive: mean = %.1f ms, SD = %.1f ms (n = %d)\n',...
+        mean(passive),std(passive),numel(passive));
+
+    fprintf('Active : mean = %.1f ms, SD = %.1f ms (n = %d)\n',...
+        mean(active),std(active),numel(active));
+
+    fprintf('Variance comparison p = %.4f\n',p);
+
+end
+
 %%
 function clustering_test(peak_times_ms, edges, plot_title)
 
