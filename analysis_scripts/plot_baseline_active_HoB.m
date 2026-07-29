@@ -15,16 +15,16 @@ intan_folders_list = intan_folders_list([intan_folders_list.isdir] & ~startsWith
 intan_folders_list = intan_folders_list(sort_ord);
 opts = detectImportOptions(metadata_csv);
 opts = setvartype(opts, 'Stim_Delay', 'string');
-T    = readtable(metadata_csv, opts);BL_closed_loop_STIM_003_250528_143802
+T    = readtable(metadata_csv, opts);
 
-peak_times_passive_ipsi = [17.579, 20.974, 24.119, 27.526, 31.043, 34.266, 37.244, 40.461, 43.869, 47.226];
-peak_times_active_ipsi  = [14.146, 17.795, 21.477, 25.424, 29.449, 33.545, 37.44, 41.59];
-
-peak_times_passive_contra = [16.2, 19.434, 22.518, 26.027, 29.263, 32.425, 35.59, 38.885, 41.978, 45.523, 49.915];
-peak_times_active_contra  = [15.911, 19.723, 23.197, 27.366, 31.659, 35.227, 39.445];
+% peak_times_passive_ipsi = [17.579, 20.974, 24.119, 27.526, 31.043, 34.266, 37.244, 40.461, 43.869, 47.226];
+% peak_times_active_ipsi  = [14.146, 17.795, 21.477, 25.424, 29.449, 33.545, 37.44, 41.59];
+% 
+% peak_times_passive_contra = [16.2, 19.434, 22.518, 26.027, 29.263, 32.425, 35.59, 38.885, 41.978, 45.523, 49.915];
+% peak_times_active_contra  = [15.911, 19.723, 23.197, 27.366, 31.659, 35.227, 39.445];
 
 %% Load conditions
-cal_file    = load('/Volumes/data/Current Project Databases - NHP/2025 Cerebellum prosthesis/Bert/BL_RW_003_Session_1/Calibrated/IntanFile_5/BL_closed_loop_STIM_003_003_Cal_stim.mat');
+cal_file    = load('/Volumes/data/Current Project Databases - NHP/2025 Cerebellum prosthesis/Bert/BL_RW_003_Session_1/Calibrated/IntanFile_1/BL_closed_loop_STIM_003_003_Cal.mat');
 spike_train = load('/Volumes/data/Current Project Databases - NHP/2025 Cerebellum prosthesis/Bert/BL_RW_003_Session_1/results/checkpoints/sorting_results/BL_closed_loop_STIM_003_250528_140952/NPRW/spike_trains.mat');
 %%
 cutoff_freq = 5;
@@ -39,7 +39,7 @@ win_pre_s  = 0.4;
 win_post_s = 0.4;
 
 data_cond  = cal_file.Data;
-cond_title = 'Passive HoB';
+cond_title = 'Active HoB';
 
 % all units present in spike_train, excluding any non-unit fields
 all_unit_names = fieldnames(spike_train);
@@ -47,7 +47,7 @@ all_unit_names = all_unit_names(startsWith(all_unit_names, 'unit_'));
 n_units = length(all_unit_names);
 
 %% Plot per-unit summary figures (vel / counts / rate / raster / PSTH)
-for u = 2
+for u = 14
     unit_name = all_unit_names{u};
     unit_spike_train = spike_train.(unit_name);
 
