@@ -192,32 +192,29 @@ end
 
 
 
- if modPos >= modNeg
+    if modPos >= modNeg
 
-    pref = FRmean.active_like_stim_pos;
-    pref_dir = 'P';
+        pref = FRmean.active_like_stim_pos;
 
-else
+    else
 
-    pref = FRmean.active_like_stim_neg;
-    pref_dir = 'N';
-     
+        pref = FRmean.active_like_stim_neg;
+
+    end
+
+
+% Normalize using only the response from 0–400 ms
+normWindow = preTime+1 : preTime+351;
+
+peak = max(pref(normWindow));
+
+if peak <= 0 || isnan(peak)
+    peak = 1;
 end
 
-% Save the raw firing rate
-pref_raw(:,n) = pref;
-ctrl_pref_dir{n} = pref_dir;
+peak_control(n) = peak;
 
-% Normalize for heatmap
-peak = max(pref(preTime+1 : preTime+401));
-
-peak_ctrl(:,n) = peak;
-
-if peak==0
-    peak=1;
-end
-
-fr_preferred(:,n)=pref/peak;
+fr_preferred(:,n) = pref / peak;
 % 
 % baseline = mean(pref(1:preTime));
 % 
@@ -238,7 +235,7 @@ end
 %% Keep only common neurons
 
 fr_control_common = fr_preferred(:,keepIdx);
-pref_raw_control = pref_raw(:,keepIdx);
+
 
 
 %% Sort neurons using CONTROL peak timing
@@ -261,7 +258,7 @@ save('Control_heatmap_order.mat',...
     'control_sorted',...
     'velocity_neg',...
     'velocity_pos',...
-    'peak_ctrl');
+    'peak_control');
 
 
 %% ================================================================
@@ -281,7 +278,8 @@ load(fullfile(Path,[paradigm '.mat']))
 load('Control_heatmap_order.mat',...
     'common_units',...
     'order',...
-    'peak_ctrl');
+    'peak_control');
+
 
 %% Find stimulation train onsets
 
@@ -396,27 +394,32 @@ for n = 1:length(unitFields)
 
 
 
-if modPos>=modNeg
+    if modPos>=modNeg
 
-    pref=FRmean.active_like_stim_pos;
+        pref=FRmean.active_like_stim_pos;
 
-else
+    else
 
-    pref=FRmean.active_like_stim_neg;
+        pref=FRmean.active_like_stim_neg;
 
-end
+    end
 
-% Save raw FR
-pref_raw(:,n)=pref;
+% peak = peak_control(n);
+% 
+% if peak<=0
+%     peak=1;
+% end
+% 
+% fr_preferred(:,n)=pref/peak;
 
-% Normalize for display
-peak = max(pref(preTime+1 : preTime+401));
+    peak=max(pref(preTime+1:end));
 
-if peak==0
-    peak=1;
-end
+    if peak==0
+        peak=1;
+    end
 
-fr_preferred(:,n)=pref/peak;
+
+    fr_preferred(:,n)=pref/peak;
 
 
 end
@@ -436,7 +439,6 @@ order_stim=order(tf);
 
 fr_stim_common=fr_preferred(:,stimIdx);
 
-pref_raw_stim = pref_raw(:,stimIdx);
 
 stim_sorted=flipud(fr_stim_common(:,order_stim)');
 
@@ -445,19 +447,21 @@ stim_sorted=flipud(fr_stim_common(:,order_stim)');
 %% ==========================================================
 
 % Window for stimulation effect
-sortWindow = preTime+121:preTime+401;
+sortWindow = preTime+121 : preTime+401;
 
-% Use RAW firing rates for sorting
-baseline = mean(pref_raw_stim(1:preTime,:),1);
+% Baseline
+baseline = mean(fr_stim_common(1:preTime,:),1);
 
-postResp = mean(pref_raw_stim(sortWindow,:),1);
+% Mean response after stimulation
+postResp = mean(fr_stim_common(sortWindow,:),1);
 
+% Mean modulation
 deltaResp = postResp - baseline;
 
-% Largest increase first
+% Largest excitation first
 [~,stimResponseOrder] = sort(deltaResp,'descend');
 
-% Display normalized heatmap
+% Heatmap
 stim_sorted_response = flipud(fr_stim_common(:,stimResponseOrder)');
 
 
@@ -545,13 +549,4 @@ colorbar
 
 xline(0,'r--')
 
-box off
-
-subplot(2,3,5)
-imagesc(win,1:size(stim_sorted_response,1),stim_sorted_response)
-axis xy
-caxis([0 1])
-colormap(bone)
-title('Stim sorted by 120-400 ms response')
-xline(0,'r--')
 box off
