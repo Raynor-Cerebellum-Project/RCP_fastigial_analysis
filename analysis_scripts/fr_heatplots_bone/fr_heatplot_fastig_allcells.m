@@ -27,19 +27,16 @@ g = exp(-(x.^2)/(2*sigma^2));
 g = g/sum(g);
 
 
-%% Neurons to include in BOTH conditions
-
-common_units = [6 59 75 83 84 97 103 105 113 117 ...
-                130 162 163 164 187 24 95 100 151];
-
 
 %% ================================================================
 %% ======================= CONTROL FILE ===========================
 %% ================================================================
 
 Path = '\\cullenstor\data\Current Project Databases - NHP\2025 Cerebellum prosthesis\Bert\BL_RW_003_Session_1\Calibrated\IntanFile_1\';
-
 paradigm = 'BL_closed_loop_STIM_003_004_Cal_stitched';
+
+% Path = '\\cullenstor\data\Current Project Databases - NHP\2025 Cerebellum prosthesis\Bert\BL_RW_003_Session_1\Calibrated\IntanFile_3';
+% paradigm = 'BL_closed_loop_STIM_003_006_Cal_stim_stitched_individual';
 
 load(fullfile(Path,[paradigm '.mat']))
 
@@ -53,6 +50,11 @@ unitNumbers = cellfun(@(x) sscanf(x,'unit_%d'), unitFields);
 
 fprintf('Control: found %d neurons\n',length(unitFields))
 
+%% Neurons to include in BOTH conditions
+
+% common_units2 = [6 59 75 83 84 97 103 105 113 117 ... %IF you want to specify the unit numbers
+%                 130 162 163 164 187 24 95 100 151];
+common_units = unitNumbers'; %ALL the units
 
 % indices of neurons used in both conditions
 
@@ -283,6 +285,7 @@ load('Control_heatmap_order.mat',...
 
 %% Find stimulation train onsets
 
+%addpath('\\cullenstor\data\Current Project Databases - NHP\2025 Cerebellum prosthesis\Bryan\RCP_fastigial_analysis\functions')
 stimOnsets = findStimOnsets(Data.Neural(:,1),FsSpike,FsBeh);
 
 fprintf('Detected %d stimulation trains\n',length(stimOnsets))
